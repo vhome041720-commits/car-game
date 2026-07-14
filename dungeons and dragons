@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Albion-like 3D Game</title>
+
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+}
+canvas{
+    display:block;
+}
+#ui{
+    position:absolute;
+    top:10px;
+    left:10px;
+    color:white;
+    font-family:Arial;
+    font-size:20px;
+}
+</style>
+
+<script type="importmap">
+{
+"imports":{
+"three":"https://unpkg.com/three@0.166.1/build/three.module.js"
+}
+}
+</script>
+
+</head>
+
+<body>
+
+<div id="ui">
+WASD - Move
+</div>
+
+<script type="module">
+
+import * as THREE from "three";
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x87CEEB);
+
+// Camera
+const camera=new THREE.PerspectiveCamera(
+60,
+window.innerWidth/window.innerHeight,
+0.1,
+1000
+);
+
+// Renderer
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.shadowMap.enabled=true;
+document.body.appendChild(renderer.domElement);
+
+// Lights
+scene.add(new THREE.AmbientLight(0xffffff,0.6));
+
+const sun=new THREE.DirectionalLight(0xffffff,1);
+sun.position.set(30,40,20);
+sun.castShadow=true;
+scene.add(sun);
+
+// Ground
+const ground=new THREE.Mesh(
+new THREE.PlaneGeometry(200,200),
+new THREE.MeshLambertMaterial({
+color:0x4CAF50
+})
+);
+
+ground.rotation.x=-Math.PI/2;
+ground.receiveShadow=true;
+scene.add(ground);
+
+// Player
+
+const player=new THREE.Group();
+
+const body=new THREE.Mesh(
+new THREE.BoxGeometry(1,2,1),
+new THREE.MeshPhongMaterial({
+color:0x3366ff
+})
+);
+
+body.position.y=1;
+body.castShadow=true;
+
+const head=new THREE.Mesh(
+new THREE.SphereGeometry(0.45),
+new THREE.MeshPhongMaterial({
+color:0xffddaa
+})
+);
+
+head.position.y=2.4;
+head.castShadow=true;
+
+player.add(body);
+player.add(head);
+
+scene.add(player);
+
+// Trees
+
+function tree(x,z){
+
+const group=new THREE.Group();
+
+const trunk=new THREE.Mesh(
+new THREE.CylinderGeometry(0.2,0.25,2),
+new THREE.MeshPhongMaterial({
+color:0x8B4513
+})
+);
+
+trunk.position.y=1;
+
+const leaves=new THREE.Mesh(
+new THREE.SphereGeometry(1),
+new THREE.MeshPhongMaterial({
+color:0x228B22
+})
+);
+
+leaves.position.y=2.5;
+
+group.add(trunk);
+group.add(leaves);
+
+group.position.set(x,0,z);
+
+scene.add(group);
+
+}
+
+for(let i=0;i<40;i++){
+
+tree(
+Math.random()*180-90,
+Math.random()*180-90
+);
+
+}
+
+// Rocks
+
+for(let i=0;i<20;i++){
+
+const rock=new THREE.Mesh(
+
+new THREE.DodecahedronGeometry(
+0.7+Math.random()*0.5
+),
+
+new THREE.MeshPhongMaterial({
+color:"gray"
+})
+
+);
+
+rock.position.set(
+
+Math.random()*180-90,
+0.5,
+Math.random()*180-90
+
+);
+
+scene.add(rock);
+
+}
+
+// Controls
+
+const keys={};
+
+window.addEventListener("keydown",e=>keys[e.key.toLowerCase()]=true);
+
+window.addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
+
+// Game Loop
+
+function animate(){
+
+requestAnimationFrame(animate);
+
+const speed=0.15;
+
+if(keys["w"]) player.position.z-=speed;
+if(keys["s"]) player.position.z+=speed;
+if(keys["a"]) player.position.x-=speed;
+if(keys["d"]) player.position.x+=speed;
+
+// Camera Follow
+
+camera.position.lerp(
+
+new THREE.Vector3(
+
+player.position.x,
+
+10,
+
+player.position.z+10
+
+),
+
+0.08
+
+);
+
+camera.lookAt(player.position);
+
+renderer.render(scene,camera);
+
+}
+
+animate();
+
+window.addEventListener("resize",()=>{
+
+camera.aspect=window.innerWidth/window.innerHeight;
+
+camera.updateProjectionMatrix();
+
+renderer.setSize(
+
+window.innerWidth,
+
+window.innerHeight
+
+);
+
+});
+
+</script>
+
+</body>
+</html>
+</body>
+</html>
