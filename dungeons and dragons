@@ -45,6 +45,31 @@ import * as THREE from "three";
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x87CEEB);
 
+<div id="mainMenu">
+
+    <h1>Adventure World</h1>
+
+    <button id="continueBtn">Continue</button>
+
+    <button id="newGameBtn">New Game</button>
+
+    <button id="settingsBtn">Settings</button>
+
+</div>
+
+<div id="settingsMenu">
+
+    <h2>Graphics</h2>
+
+    <button onclick="setGraphics('low')">Low</button>
+    <button onclick="setGraphics('medium')">Medium</button>
+    <button onclick="setGraphics('high')">High</button>
+
+    <br><br>
+
+    <button onclick="closeSettings()">Back</button>
+
+</div>
 // Camera
 const camera=new THREE.PerspectiveCamera(
 60,
