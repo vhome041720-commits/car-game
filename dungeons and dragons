@@ -59,6 +59,120 @@ renderer.setSize(window.innerWidth,window.innerHeight);
 renderer.shadowMap.enabled=true;
 document.body.appendChild(renderer.domElement);
 
+// ================= PLAYER =================
+const player = new THREE.Group();
+
+// Materials
+const skin = new THREE.MeshStandardMaterial({ color: 0xffd6b5 });
+const armor = new THREE.MeshStandardMaterial({ color: 0x3366ff });
+const dark = new THREE.MeshStandardMaterial({ color: 0x333333 });
+const swordMat = new THREE.MeshStandardMaterial({ color: 0xc0c0c0 });
+const wood = new THREE.MeshStandardMaterial({ color: 0x8b5a2b });
+
+// Body
+const body = new THREE.Mesh(
+    new THREE.BoxGeometry(0.8,1,0.5),
+    armor
+);
+body.position.y = 0.9;
+body.castShadow = true;
+player.add(body);
+
+// Head
+const head = new THREE.Mesh(
+    new THREE.SphereGeometry(0.35,16,16),
+    skin
+);
+head.position.y = 1.7;
+head.castShadow = true;
+player.add(head);
+
+// Left Arm
+const leftArm = new THREE.Mesh(
+    new THREE.BoxGeometry(0.22,0.8,0.22),
+    armor
+);
+leftArm.position.set(-0.55,0.95,0);
+player.add(leftArm);
+
+// Right Arm
+const rightArm = new THREE.Mesh(
+    new THREE.BoxGeometry(0.22,0.8,0.22),
+    armor
+);
+rightArm.position.set(0.55,0.95,0);
+player.add(rightArm);
+
+// Left Leg
+const leftLeg = new THREE.Mesh(
+    new THREE.BoxGeometry(0.25,0.8,0.25),
+    dark
+);
+leftLeg.position.set(-0.2,0.2,0);
+player.add(leftLeg);
+
+// Right Leg
+const rightLeg = new THREE.Mesh(
+    new THREE.BoxGeometry(0.25,0.8,0.25),
+    dark
+);
+rightLeg.position.set(0.2,0.2,0);
+player.add(rightLeg);
+
+// Sword
+const sword = new THREE.Group();
+
+const blade = new THREE.Mesh(
+    new THREE.BoxGeometry(0.08,1.1,0.08),
+    swordMat
+);
+blade.position.y = 0.55;
+
+const handle = new THREE.Mesh(
+    new THREE.BoxGeometry(0.12,0.25,0.12),
+    wood
+);
+handle.position.y = -0.15;
+
+const guard = new THREE.Mesh(
+    new THREE.BoxGeometry(0.35,0.05,0.08),
+    wood
+);
+guard.position.y = 0;
+
+sword.add(blade);
+sword.add(handle);
+sword.add(guard);
+
+sword.position.set(0.8,0.8,0);
+sword.rotation.z = -0.3;
+
+player.add(sword);
+
+// Shield
+const shield = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.35,0.35,0.08,20),
+    new THREE.MeshStandardMaterial({
+        color:0x996633,
+        metalness:0.2,
+        roughness:0.8
+    })
+);
+
+shield.rotation.z = Math.PI/2;
+shield.position.set(-0.8,0.9,0);
+
+player.add(shield);
+
+// Enable shadows
+player.traverse((obj)=>{
+    if(obj.isMesh){
+        obj.castShadow = true;
+        obj.receiveShadow = true;
+    }
+});
+
+scene.add(player);
 // Lights
 scene.add(new THREE.AmbientLight(0xffffff,0.6));
 
