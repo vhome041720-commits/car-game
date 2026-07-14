@@ -67,16 +67,16 @@ sun.position.set(30,40,20);
 sun.castShadow=true;
 scene.add(sun);
 
-// Ground
-const ground=new THREE.Mesh(
-new THREE.PlaneGeometry(200,200),
-new THREE.MeshLambertMaterial({
-color:0x4CAF50
-})
+// ---------- Ground ----------
+const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(200,200),
+    new THREE.MeshLambertMaterial({
+        color:0x4b8f29
+    })
 );
 
-ground.rotation.x=-Math.PI/2;
-ground.receiveShadow=true;
+ground.rotation.x = -Math.PI/2;
+ground.receiveShadow = true;
 scene.add(ground);
 
 // Player
