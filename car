@@ -2,261 +2,237 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Low Graphic Car Game</title>
+<title>3D Car Game</title>
 
 <style>
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-}
-
 body{
-background:#2f2f2f;
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
-font-family:Arial;
-overflow:hidden;
+    margin:0;
+    overflow:hidden;
+    background:#87CEEB;
 }
 
-canvas{
-background:#4caf50;
-border:4px solid white;
+#score{
+    position:absolute;
+    top:10px;
+    left:10px;
+    color:white;
+    font-size:25px;
+    font-family:Arial;
+    z-index:100;
 }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/three@0.166/build/three.min.js"></script>
+
 </head>
+
 <body>
 
-<canvas id="game" width="400" height="700"></canvas>
+<div id="score">Score : 0</div>
 
 <script>
 
-const canvas=document.getElementById("game");
-const ctx=canvas.getContext("2d");
+// Scene
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb);
 
-const road={
-x:70,
-width:260
-};
+// Camera
+const camera = new THREE.PerspectiveCamera(
+60,
+window.innerWidth/window.innerHeight,
+0.1,
+1000
+);
 
-let score=0;
-let speed=6;
-let gameOver=false;
+camera.position.set(0,8,12);
+camera.lookAt(0,0,-20);
 
-const player={
-x:180,
-y:580,
-w:40,
-h:70,
-color:"#1e88e5"
-};
+// Renderer
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// Light
+const light=new THREE.DirectionalLight(0xffffff,1.2);
+light.position.set(10,20,10);
+scene.add(light);
+
+scene.add(new THREE.AmbientLight(0xffffff,0.5));
+
+// Road
+
+const road=new THREE.Mesh(
+new THREE.BoxGeometry(8,0.2,250),
+new THREE.MeshPhongMaterial({color:0x444444})
+);
+
+road.position.z=-100;
+scene.add(road);
+
+// Grass
+
+const grass=new THREE.Mesh(
+new THREE.BoxGeometry(60,0.1,250),
+new THREE.MeshPhongMaterial({color:0x228B22})
+);
+
+grass.position.y=-0.15;
+grass.position.z=-100;
+scene.add(grass);
+
+// Player
+
+const player=new THREE.Group();
+
+const body=new THREE.Mesh(
+new THREE.BoxGeometry(1.2,0.6,2),
+new THREE.MeshPhongMaterial({color:0x0066ff})
+);
+
+body.position.y=0.5;
+
+const roof=new THREE.Mesh(
+new THREE.BoxGeometry(0.8,0.5,1),
+new THREE.MeshPhongMaterial({color:0xffffff})
+);
+
+roof.position.set(0,1,0);
+
+player.add(body);
+player.add(roof);
+
+player.position.set(0,0,5);
+
+scene.add(player);
+
+// Controls
 
 const keys={};
 
-document.addEventListener("keydown",(e)=>{
-keys[e.key]=true;
+document.addEventListener("keydown",e=>keys[e.key]=true);
+document.addEventListener("keyup",e=>keys[e.key]=false);
 
-if(gameOver && e.key==="Enter"){
-restart();
-}
-});
+// Enemy Cars
 
-document.addEventListener("keyup",(e)=>{
-keys[e.key]=false;
-});
+const enemies=[];
 
-let enemies=[];
+function spawnEnemy(){
 
-function createEnemy(){
+const enemy=new THREE.Group();
 
-let lane=Math.floor(Math.random()*3);
+const b=new THREE.Mesh(
+new THREE.BoxGeometry(1.2,0.6,2),
+new THREE.MeshPhongMaterial({
+color:Math.random()*0xffffff
+})
+);
 
-let x=road.x+30+lane*80;
+b.position.y=0.5;
 
-enemies.push({
-x:x,
-y:-100,
-w:40,
-h:70,
-color:"red"
-});
+const r=new THREE.Mesh(
+new THREE.BoxGeometry(0.8,0.5,1),
+new THREE.MeshPhongMaterial({color:0xffffff})
+);
 
-}
+r.position.y=1;
 
-setInterval(()=>{
-if(!gameOver)
-createEnemy();
-},900);
+enemy.add(b);
+enemy.add(r);
 
-function drawRoad(){
+enemy.position.x=[-2.5,0,2.5][Math.floor(Math.random()*3)];
+enemy.position.z=-180;
 
-ctx.fillStyle="#555";
-ctx.fillRect(road.x,0,road.width,700);
+scene.add(enemy);
 
-ctx.fillStyle="white";
-
-for(let i=0;i<20;i++){
-
-ctx.fillRect(196,i*50+roadOffset,8,30);
+enemies.push(enemy);
 
 }
 
+setInterval(spawnEnemy,900);
+
+// Score
+
+let score=0;
+let speed=0.8;
+let gameOver=false;
+
+function animate(){
+
+requestAnimationFrame(animate);
+
+if(gameOver){
+renderer.render(scene,camera);
+return;
 }
-
-let roadOffset=0;
-
-function drawPlayer(){
-
-ctx.fillStyle=player.color;
-ctx.fillRect(player.x,player.y,player.w,player.h);
-
-ctx.fillStyle="#fff";
-ctx.fillRect(player.x+8,player.y+10,24,15);
-
-ctx.fillStyle="black";
-ctx.fillRect(player.x-2,player.y+8,6,15);
-ctx.fillRect(player.x+36,player.y+8,6,15);
-ctx.fillRect(player.x-2,player.y+48,6,15);
-ctx.fillRect(player.x+36,player.y+48,6,15);
-
-}
-
-function drawEnemies(){
-
-for(let e of enemies){
-
-ctx.fillStyle=e.color;
-ctx.fillRect(e.x,e.y,e.w,e.h);
-
-ctx.fillStyle="white";
-ctx.fillRect(e.x+8,e.y+10,24,15);
-
-ctx.fillStyle="black";
-ctx.fillRect(e.x-2,e.y+8,6,15);
-ctx.fillRect(e.x+36,e.y+8,6,15);
-ctx.fillRect(e.x-2,e.y+48,6,15);
-ctx.fillRect(e.x+36,e.y+48,6,15);
-
-}
-}
-
-function update(){
-
-if(gameOver)return;
-
-roadOffset+=speed;
-
-if(roadOffset>50)
-roadOffset=0;
 
 if(keys["ArrowLeft"])
-player.x-=6;
+player.position.x-=0.15;
 
 if(keys["ArrowRight"])
-player.x+=6;
+player.position.x+=0.15;
 
-if(player.x<road.x+10)
-player.x=road.x+10;
-
-if(player.x>road.x+road.width-player.w-10)
-player.x=road.x+road.width-player.w-10;
+player.position.x=Math.max(-3,Math.min(3,player.position.x));
 
 for(let i=enemies.length-1;i>=0;i--){
 
-let e=enemies[i];
+const e=enemies[i];
 
-e.y+=speed;
+e.position.z+=speed;
 
-if(e.y>750){
+if(e.position.z>15){
+
+scene.remove(e);
 
 enemies.splice(i,1);
 
 score++;
 
-if(score%10===0)
-speed+=0.5;
+document.getElementById("score").innerHTML="Score : "+score;
+
+if(score%10==0)
+speed+=0.08;
+
+continue;
 
 }
 
-if(player.x<e.x+e.w &&
-player.x+player.w>e.x &&
-player.y<e.y+e.h &&
-player.y+player.h>e.y){
+if(
+Math.abs(player.position.x-e.position.x)<1 &&
+Math.abs(player.position.z-e.position.z)<2
+){
 
 gameOver=true;
 
-}
+document.getElementById("score").innerHTML=
+"GAME OVER<br>Score : "+score;
 
 }
 
 }
 
-function drawScore(){
+// Fake road movement
 
-ctx.fillStyle="white";
-ctx.font="22px Arial";
-ctx.fillText("Score : "+score,15,30);
+road.material.mapOffset=
+new THREE.Vector2(0,performance.now()*0.001);
 
-ctx.fillText("Speed : "+speed.toFixed(1),15,60);
-
-}
-
-function drawGameOver(){
-
-ctx.fillStyle="rgba(0,0,0,0.7)";
-ctx.fillRect(0,0,400,700);
-
-ctx.fillStyle="white";
-ctx.font="40px Arial";
-ctx.fillText("GAME OVER",70,300);
-
-ctx.font="24px Arial";
-ctx.fillText("Score : "+score,135,350);
-
-ctx.fillText("Press ENTER",110,410);
+renderer.render(scene,camera);
 
 }
 
-function loop(){
+animate();
 
-ctx.clearRect(0,0,400,700);
+window.addEventListener("resize",()=>{
 
-drawRoad();
+camera.aspect=window.innerWidth/window.innerHeight;
 
-update();
+camera.updateProjectionMatrix();
 
-drawEnemies();
+renderer.setSize(window.innerWidth,window.innerHeight);
 
-drawPlayer();
-
-drawScore();
-
-if(gameOver)
-drawGameOver();
-
-requestAnimationFrame(loop);
-
-}
-
-function restart(){
-
-score=0;
-speed=6;
-gameOver=false;
-
-player.x=180;
-
-enemies=[];
-
-}
-
-loop();
+});
 
 </script>
 
 </body>
+</html>
 </html>
