@@ -70,6 +70,7 @@ scene.background=new THREE.Color(0x87CEEB);
     <button onclick="closeSettings()">Back</button>
 
 </div>
+
 // Camera
 const camera=new THREE.PerspectiveCamera(
 60,
